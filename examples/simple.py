@@ -1,23 +1,3 @@
-# opentracing-logging-python
-OpenTracing handler for the Python logging library
-
-**Warning: This library is currently in an alpha state**
-
-## Installation
-
-TODO
-
-## Usage
-We use Jaeger for the follwing examples but you can also use other OpenTracing compatible tracers.
-For preparation download the [jaeger-all-in-one executable](https://www.jaegertracing.io/download/#binaries), unpack,
-and start it.
-
-```batch
-jaeger-all-in-one.exe --collector.zipkin.http-port=9411
-```
-
-### Simple
-```python
 import logging
 import time
 
@@ -52,11 +32,3 @@ with tracer.start_active_span('hello-world') as scope:
 
 # give Jaeger some time to send all the data
 time.sleep(2)
-```
-
-Navigate with your webbrowser to <http://localhost:16686>.
-You should see the trace with the log line.
-
-### Custom Formatter
-
-TODO
