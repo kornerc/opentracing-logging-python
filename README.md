@@ -88,7 +88,6 @@ Within this active span, make a log with the severity info.
 It is expected that this log will be captured by our handler for OpenTracing which should forward the log to our tracer.
 
 ```python
-
 # retrieve the finished span
 finished_span = tracer.finished_spans()[0]
 # get the log line from
