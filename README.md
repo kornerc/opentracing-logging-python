@@ -113,7 +113,7 @@ OpenTracing. Thereby,
 
 For each key-value pair a new formatter `logging.Formatter` will be created.
 
-When we replace the lines
+When we replace from the previous [simple example](#Simple) the lines
 ```python
 # create a new OpenTracing handler for the logging package
 handler = OpenTracingHandler(tracer=tracer)
@@ -134,7 +134,7 @@ The expected output of the modified example is
 {'event': 'INFO', 'message': 'Hello World from Python logging to OpenTracing', 'source': 'custom_formatter.py:L26'}
 ```
 
-See the full example [custom_formatter.py](../blob/master/logging_opentracing/examples/custom_formatter.py)
+See the full example [custom_formatter.py](logging_opentracing/examples/custom_formatter.py)
 
 ## Format
 This library uses `logging.Formatter(fmt=fmt).format(logging_LogRecord)`, where `fmt` is the format specified in the
