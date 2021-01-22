@@ -51,6 +51,55 @@ log = finished_span.logs[0]
 print(log.key_values)
 ```
 
+Here some explanation
+
+```python
+# initialize a mock tracer
+tracer = MockTracer()
+```
+Initialize the mock tracer from the OpenTracing library.
+As mentioned before, instead you can use any OpenTracing compatible tracer.
+
+```python
+# prepare the logger
+logger = logging.getLogger('mylogger')
+logger.setLevel(logging.INFO)
+```
+Prepare a logger from the Python `logging` package.
+Set its logging level to `INFO` such that logs with the severity `INFO` are also captured.
+
+```python
+# create a new OpenTracing handler for the logging package
+handler = OpenTracingHandler(tracer=tracer)
+logger.addHandler(handler)
+```
+First, initialize the OpenTracing handler `OpenTracingHandler` for `logging`.
+It needs an OpenTracing tracer as parameter.
+Then, add the handler to the logger.
+
+```python
+# start an active span
+with tracer.start_active_span('hello-world') as scope:
+    # this log will be propagated to
+    logger.info('Hello World from Python logging to OpenTracing')
+```
+Start a new active span with the name `hello-world`.
+Within this active span, make a log with the severity info.
+It is expected that this log will be captured by our handler for OpenTracing which should forward the log to our tracer.
+
+```python
+
+# retrieve the finished span
+finished_span = tracer.finished_spans()[0]
+# get the log line from
+log = finished_span.logs[0]
+
+# print the key_values of the log
+# expected output: {'event': 'INFO', 'message': 'Hello World from Python logging to OpenTracing'}
+print(log.key_values)
+```
+These lines are only used to check if the log have been successfully forwarder to out tracer.
+
 ### Custom Formatter
 
 TODO
