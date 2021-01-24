@@ -51,7 +51,7 @@ log = finished_span.logs[0]
 print(log.key_values)
 ```
 
-Here some explanation
+Here some additional explanation
 
 ```python
 # initialize a mock tracer
@@ -136,9 +136,42 @@ The expected output of the modified example is
 
 See the full example [custom_formatter.py](logging_opentracing/examples/custom_formatter.py)
 
+### Manually pass a span
+The OpenTracing logging handler tries to retrieve a span by accessing the current scope
+`scope = tracer.scope_manager.active` and an the case that a scope is available accessing its current span
+`span = scope.span`.
+However, such a scope is only available when a scope has been indirectly created through starting an active span
+`tracer.start_active_span()` or when a scope has been directly activated `tracer.scope_manager.activate()`.
+
+Therefore it is also possible to pass a span to a log with the `extra` parameter.
+```python
+# start a span
+with tracer.start_span('hello-world') as span:
+    # the span is directly passed to the log with the "extra" parameter
+    logger.info('A span has been directly passed', extra={'span': span})
+```
+
+The default key which is used to check if a span has been passed is `'span'`.
+However, it can be customized in the instantiation of the handler.
+```python
+handler = OpenTracingHandler(tracer=tracer, span_key='sp')
+
+# ...
+
+# start a span
+with tracer.start_span('hello-world') as span:
+    # the span is directly passed to the log with the "extra" parameter
+    # this time we have to use the key "sp" because we set span_key='sp' in the constructor
+    logger.info('A span has been directly passed', extra={'sp': span})
+```
+
+See the full example [span_passed.py](logging_opentracing/examples/span_passed.py)
+
 ## Format
-This library uses `logging.Formatter(fmt=fmt).format(logging_LogRecord)`, where `fmt` is the format specified in the
+This library uses `logging.Formatter(fmt=fmt).format(logging_LogRecord)` for getting information from a
+`logging.LogRecord`, where `fmt` is the format specified in the
 values of the parameter `kv_format` in the constructor of `OpenTracingHandler`.
+`logging_LogRecord` is the variable which hold a `logging.logRecord`.
 
 Therefore, the format of `fmt` follows the formatting specification of
 [LogRecord attributes](https://docs.python.org/3/library/logging.html#logrecord-attributes).
