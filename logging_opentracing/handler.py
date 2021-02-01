@@ -1,3 +1,7 @@
+"""
+An OpenTracing handler for the Python logging package
+"""
+
 import io
 from logging import Handler, LogRecord
 import traceback
@@ -63,6 +67,12 @@ class OpenTracingHandler(Handler):
         return {key: OpenTracingFormatter(fmt=fmt) for key, fmt in kv_format.items()}
 
     def _format_kv(self, record: LogRecord) -> Dict[str, str]:
+        """
+        Use the formatters ``self.formatters`` to format the key-value pairs for the log.
+
+        :param record: Logging record
+        :return: A dictionary containing the key-value pairs for the log
+        """
         kv = dict()
 
         for key, formatter in self._formatters.items():
@@ -73,8 +83,21 @@ class OpenTracingHandler(Handler):
         return kv
 
     def _get_span(self, record: LogRecord) -> Optional[Span]:
+        """
+        Try to get the current span.
+
+        1. Check if the record provides a span
+        2. If the span does not contain a span try to get the span with the ScopeManager
+
+        In the case that no span can be retrieved, return ``None``.
+
+        :param record: Logging record
+        :return: Span if it was retrievable, otherwise, ``None``.
+        """
+        # has a Span been provided in the record
         span = getattr(record, self._span_key) if hasattr(record, self._span_key) else None
 
+        # try to get an active span from the ScopeManager
         if span is None:
             scope = self._tracer.scope_manager.active
 
@@ -85,23 +108,38 @@ class OpenTracingHandler(Handler):
         return span
 
     @staticmethod
-    def _on_error(span, key_values, exc_type, exc_val, exc_tb):
+    def _on_error(span: Span, key_values: Dict[str, str], exc_type, exc_val, exc_tb):
+        """
+        This function will be called in the case that an exception was raised.
+        It adds the exception information to the log and tries to stick to the same format opentracing is using when
+        an uncaught exception is raised.
+        However, it will not overwrite existing key-value pairs.
+        """
         if not span or not exc_val:
             return
 
         span.set_tag(tags.ERROR, True)
 
-        for k, v in {
+        # this is the default error format of OpenTracing
+        default_error_format = {
             logs.EVENT: tags.ERROR,
             logs.MESSAGE: str(exc_val),
             logs.ERROR_OBJECT: exc_val,
             logs.ERROR_KIND: exc_type,
             logs.STACK: exc_tb,
-        }.items():
+        }
+
+        for k, v in default_error_format.items():
+            # don't replace key-value pairs which are already present
             if k not in key_values:
                 key_values[k] = v
 
     def emit(self, record: LogRecord):
+        """
+        Log the record
+
+        :param record: Logging record
+        """
         span = self._get_span(record=record)
 
         if span is None:
@@ -109,15 +147,19 @@ class OpenTracingHandler(Handler):
 
         kv = self._format_kv(record=record)
 
+        # check if an error has been raised
         exc_info = record.exc_info
         if record.exc_info:
             exc_type, exc_val, exc_tb = exc_info
 
+            # catch the output of print_tb()
             sio = io.StringIO()
             traceback.print_tb(exc_tb, file=sio)
             exc_tb = sio.getvalue()
             sio.close()
 
+            # add the exception details to the log
             self._on_error(span=span, key_values=kv, exc_type=exc_type, exc_val=exc_val, exc_tb=exc_tb)
 
+        # log the key-values pairs in the span
         span.log_kv(kv)
