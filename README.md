@@ -19,7 +19,6 @@ In this active span we make make an info-log and in the end we have a look if th
 
 ```python
 import logging
-import time
 
 from opentracing.mocktracer import MockTracer
 
@@ -47,8 +46,8 @@ finished_span = tracer.finished_spans()[0]
 log = finished_span.logs[0]
 
 # print the key_values of the log
-# expected output: {'event': 'INFO', 'message': 'Hello World from Python logging to OpenTracing'}
 print(log.key_values)
+# {'event': 'INFO', 'message': 'Hello World from Python logging to OpenTracing'}
 ```
 
 Here some additional explanation
@@ -94,8 +93,8 @@ finished_span = tracer.finished_spans()[0]
 log = finished_span.logs[0]
 
 # print the key_values of the log
-# expected output: {'event': 'INFO', 'message': 'Hello World from Python logging to OpenTracing'}
 print(log.key_values)
+# {'event': 'INFO', 'message': 'Hello World from Python logging to OpenTracing'}
 ```
 These lines are only used to check if the log has been successfully forwarder to out tracer.
 

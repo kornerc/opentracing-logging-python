@@ -1,14 +1,20 @@
-from logging import Handler, LogRecord, Formatter
+import io
+from logging import Handler, LogRecord
+import traceback
 from typing import Dict, Optional
 
 from opentracing import Span, Tracer
+from opentracing import logs
+from opentracing.ext import tags
+
+from .formatter import OpenTracingFormatter
 
 
 class OpenTracingHandler(Handler):
     #: Default formatter which is used when no `kv_format` has been specified in the constructor
     default_formatter = {
-        'event': '%(levelname)s',
-        'message': '%(message)s',
+        logs.EVENT: '%(levelname)s',
+        logs.MESSAGE: '%(message)s',
     }
 
     def __init__(self, tracer: Tracer, kv_format: Optional[Dict[str, str]] = None, span_key: str = 'span'):
@@ -49,14 +55,22 @@ class OpenTracingHandler(Handler):
         self._span_key = span_key
         self._formatters = self._create_formatters(kv_format=kv_format)
 
-    def _create_formatters(self, kv_format: Dict[str, str]) -> Dict[str, Formatter]:
+    @staticmethod
+    def _create_formatters(kv_format: Dict[str, str]) -> Dict[str, OpenTracingFormatter]:
         """
         Initialize the formatters
         """
-        return {key: Formatter(fmt=fmt) for key, fmt in kv_format.items()}
+        return {key: OpenTracingFormatter(fmt=fmt) for key, fmt in kv_format.items()}
 
     def _format_kv(self, record: LogRecord) -> Dict[str, str]:
-        return {key: formatter.format(record) for key, formatter in self._formatters.items()}
+        kv = dict()
+
+        for key, formatter in self._formatters.items():
+            formatter.prepare_record(record=record)
+
+            kv[key] = formatter.formatMessage(record=record)
+
+        return kv
 
     def _get_span(self, record: LogRecord) -> Optional[Span]:
         span = getattr(record, self._span_key) if hasattr(record, self._span_key) else None
@@ -70,10 +84,40 @@ class OpenTracingHandler(Handler):
 
         return span
 
+    @staticmethod
+    def _on_error(span, key_values, exc_type, exc_val, exc_tb):
+        if not span or not exc_val:
+            return
+
+        span.set_tag(tags.ERROR, True)
+
+        for k, v in {
+            logs.EVENT: tags.ERROR,
+            logs.MESSAGE: str(exc_val),
+            logs.ERROR_OBJECT: exc_val,
+            logs.ERROR_KIND: exc_type,
+            logs.STACK: exc_tb,
+        }.items():
+            if k not in key_values:
+                key_values[k] = v
+
     def emit(self, record: LogRecord):
         span = self._get_span(record=record)
 
         if span is None:
             return
 
-        span.log_kv(self._format_kv(record=record))
+        kv = self._format_kv(record=record)
+
+        exc_info = record.exc_info
+        if record.exc_info:
+            exc_type, exc_val, exc_tb = exc_info
+
+            sio = io.StringIO()
+            traceback.print_tb(exc_tb, file=sio)
+            exc_tb = sio.getvalue()
+            sio.close()
+
+            self._on_error(span=span, key_values=kv, exc_type=exc_type, exc_val=exc_val, exc_tb=exc_tb)
+
+        span.log_kv(kv)

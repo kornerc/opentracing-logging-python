@@ -1,5 +1,4 @@
 import logging
-import time
 
 from opentracing.mocktracer import MockTracer
 
@@ -27,5 +26,6 @@ finished_span = tracer.finished_spans()[0]
 log = finished_span.logs[0]
 
 # print the key_values of the log
-# expected output: {'event': 'INFO', 'message': 'Hello World from Python logging to OpenTracing'}
 print(log.key_values)
+
+expected_output = "{'event': 'INFO', 'message': 'A span has been directly passed'}\n"
