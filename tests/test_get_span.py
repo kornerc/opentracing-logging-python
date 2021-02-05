@@ -18,7 +18,7 @@ def test_active_span(tracer, logger):
     """
     operation_name = 'my_active_span'
 
-    with tracer.start_active_span(operation_name) as scope:
+    with tracer.start_active_span(operation_name):
         logger.info(TEST_LOG['message'])
 
     check_finished_spans(tracer=tracer, operation_names_expected=[operation_name],
@@ -36,7 +36,7 @@ def test_multiple_logs(tracer, logger):
     test_log_1 = deepcopy(TEST_LOG)
     test_log_1['message'] += '_1'
 
-    with tracer.start_active_span(operation_name) as scope:
+    with tracer.start_active_span(operation_name):
         logger.info(test_log_0['message'])
         logger.info(test_log_1['message'])
 

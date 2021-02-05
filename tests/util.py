@@ -65,7 +65,7 @@ def logger(tracer):
     logger = logging.getLogger('Test')
     logger.setLevel(logging.DEBUG)
 
-    # this fixture is called mutliple times and we have to remove the handlers added from the previous fixture call
+    # this fixture is called multiple times and we have to remove the handlers added from the previous fixture call
     for handler in logger.handlers:
         logger.removeHandler(handler)
 
