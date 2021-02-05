@@ -20,14 +20,8 @@ class OpenTracingHandler(Handler):
 
         :param tracer: OpenTracing tracer which is used to get the current scope and forward the logging calls to
             :func:`opentracing.span.log_kv` calls
-        :param kv_format: The dictionary is used for formatting the OpenTracing logs. The keys are the keys which will
-            be used for :func:`opentracing.span.log_kv`. The values are format strings as used by the python ``logging``
-            module. If this argument is not set, a default formatter will be used
-
-            For example, the a call to ``logger.warning('Hello World')``, where ``logger`` is a logging logger with an
-            OpenTracingHandler which has been initialized with ``{'event': '%(levelname)s', 'message': '%(message)s'}``,
-            will results in a call
-            ``tracer.scope_manager.active.span.log_kv({'event': 'WARNING', 'message': 'Hello World'})``
+        :param formatter: Formatter which will be used to format the logs. If no formatter is provided,
+            :class:`OpenTracingFormatter` with its default arguments will be used.
         :param span_key: A span can be directly passed via the parameter ``extra`` to a logging call. This parameter
             specifies under which key in the ``extra`` parameter the handler will check if a span has been passed.
             When both, a span has been passed an active span is set, the span in the ``extra`` parameters has priority
@@ -72,33 +66,6 @@ class OpenTracingHandler(Handler):
 
         return span
 
-    @staticmethod
-    def _on_error(span: Span, key_values: Dict[str, str], exc_type, exc_val, exc_tb):
-        """
-        This function will be called in the case that an exception was raised.
-        It adds the exception information to the log and tries to stick to the same format opentracing is using when
-        an uncaught exception is raised.
-        However, it will not overwrite existing key-value pairs.
-        """
-        if not span or not exc_val:
-            return
-
-        span.set_tag(tags.ERROR, True)
-
-        # this is the default error format of OpenTracing
-        default_error_format = {
-            logs.EVENT: tags.ERROR,
-            logs.MESSAGE: str(exc_val),
-            logs.ERROR_OBJECT: exc_val,
-            logs.ERROR_KIND: exc_type,
-            logs.STACK: exc_tb,
-        }
-
-        for k, v in default_error_format.items():
-            # don't replace key-value pairs which are already present
-            if k not in key_values:
-                key_values[k] = v
-
     def emit(self, record: LogRecord):
         """
         Log the record
@@ -112,6 +79,7 @@ class OpenTracingHandler(Handler):
 
         key_values = self._formatter.format(record=record)
 
+        # in the case of an exception, add an error tag of the span
         if self._formatter.has_exception:
             span.set_tag(tags.ERROR, True)
 

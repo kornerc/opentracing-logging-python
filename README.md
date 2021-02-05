@@ -169,6 +169,28 @@ with tracer.start_span('hello-world') as span:
 
 See the full example [span_passed.py](examples/span_passed.py)
 
+### Exception
+The OpenTracing handler can also be used to log exceptions.
+To do so, just log with the the level `exception`.
+
+```python
+try:
+    logger.info('This will be difficult')
+    # this statement will cause a ZeroDivisionError
+    1 / 0
+except ZeroDivisionError:
+    logger.exception('Oh no we have a ZeroDivision Error')
+```
+
+This would result in the logs
+```
+{'event': 'info', 'message': 'This will be difficult'}
+{'event': 'error', 'message': 'Oh no we have a ZeroDivision Error', 'error.object': ZeroDivisionError('division by zero'), 'error.kind': <class 'ZeroDivisionError'>, 'stack': '  File \"<path_suffix>/logging_opentracing/examples/exception.py\" line 23, in <module>\\n    1 / 0\\n'}
+```
+where the same formatting is used like OpenTracing uses when an uncaught exception is created.
+
+See the full example [exception.py](examples/exception.py)
+
 ## Format
 This library uses `logging.Formatter(fmt=fmt).format(logging_LogRecord)` for getting information from a
 `logging.LogRecord`, where `fmt` is the format specified in the
