@@ -7,10 +7,10 @@ import logging
 from typing import Dict, List
 
 import pytest
-from opentracing import Tracer, Span
+from opentracing import Tracer
 from opentracing.mocktracer import MockTracer
 
-from ..handler import OpenTracingHandler
+from logging_opentracing import OpenTracingHandler
 
 TEST_LOG = {'event': 'info', 'message': 'This is a test log'}
 
@@ -162,10 +162,10 @@ def test_nested_active_span(tracer, logger):
     test_log_2 = deepcopy(TEST_LOG)
     test_log_2['message'] += '_2'
 
-    with tracer.start_active_span(operation_names[0]) as scope_0:
+    with tracer.start_active_span(operation_names[0]):
         logger.info(test_log_0['message'])
 
-        with tracer.start_active_span(operation_names[1]) as scope_1:
+        with tracer.start_active_span(operation_names[1]):
             logger.info(test_log_1['message'])
 
         logger.info(test_log_2['message'])

@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='logging_opentracing',
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests', 'tests/*']),
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     description='OpenTracing handler for the Python logging library',

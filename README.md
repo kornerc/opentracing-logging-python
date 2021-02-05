@@ -47,7 +47,7 @@ log = finished_span.logs[0]
 
 # print the key_values of the log
 print(log.key_values)
-# {'event': 'INFO', 'message': 'Hello World from Python logging to OpenTracing'}
+# {'event': 'info', 'message': 'Hello World from Python logging to OpenTracing'}
 ```
 
 Here some additional explanation
@@ -94,7 +94,7 @@ log = finished_span.logs[0]
 
 # print the key_values of the log
 print(log.key_values)
-# {'event': 'INFO', 'message': 'Hello World from Python logging to OpenTracing'}
+# {'event': 'info', 'message': 'Hello World from Python logging to OpenTracing'}
 ```
 These lines are only used to check if the log has been successfully forwarder to out tracer.
 
@@ -119,21 +119,24 @@ handler = OpenTracingHandler(tracer=tracer)
 ```
 with the following lines
 ```python
-# create a new OpenTracing handler for the logging package and use own format
-handler = OpenTracingHandler(tracer=tracer, kv_format={
-    'event': '%(levelname)s',
+# create a new formatter with a custom format
+formatter = OpenTracingFormatter(kv_format={
+    'event': '%(levelname_lower)s',
     'message': '%(message)s',
     'source': '%(filename)s:L%(lineno)d',
 })
+
+# create a new OpenTracing handler which uses the custom formatter
+handler = OpenTracingHandler(tracer=tracer, formatter=formatter)
 ```
-we initialize a handler with a custom format.
+we initialize a handler with a formatter with a custom format.
 
 The expected output of the modified example is
 ```
-{'event': 'INFO', 'message': 'Hello World from Python logging to OpenTracing', 'source': 'custom_formatter.py:L26'}
+{'event': 'info', 'message': 'Hello World from Python logging to OpenTracing', 'source': 'custom_formatter.py:L26'}
 ```
 
-See the full example [custom_formatter.py](logging_opentracing/examples/custom_formatter.py)
+See the full example [custom_formatter.py](examples/custom_formatter.py)
 
 ### Manually pass a span
 The OpenTracing logging handler tries to retrieve a span by accessing the current scope
@@ -164,7 +167,7 @@ with tracer.start_span('hello-world') as span:
     logger.info('A span has been directly passed', extra={'sp': span})
 ```
 
-See the full example [span_passed.py](logging_opentracing/examples/span_passed.py)
+See the full example [span_passed.py](examples/span_passed.py)
 
 ## Format
 This library uses `logging.Formatter(fmt=fmt).format(logging_LogRecord)` for getting information from a
