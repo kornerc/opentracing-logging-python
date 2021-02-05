@@ -7,7 +7,7 @@ import pytest
 import re
 
 
-@pytest.mark.parametrize('name', ['simple', 'custom_formatter', 'span_passed', 'exception'])
+@pytest.mark.parametrize('name', ['simple', 'custom_formatter', 'span_passed', 'exception', 'extra_kv'])
 def test_example(capsys, name):
     module = importlib.import_module(f'examples.{name}', package='logging_opentracing.tests')
 

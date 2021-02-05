@@ -3,16 +3,17 @@ An OpenTracing handler for the Python logging package
 """
 
 from logging import Handler, LogRecord
-from typing import Dict, Optional
+from typing import Optional
 
-from opentracing import Span, Tracer, logs
+from opentracing import Span, Tracer
 from opentracing.ext import tags
 
 from .formatter import OpenTracingFormatterABC, OpenTracingFormatter
 
 
 class OpenTracingHandler(Handler):
-    def __init__(self, tracer: Tracer, formatter: Optional[OpenTracingFormatterABC] = None, span_key: str = 'span'):
+    def __init__(self, tracer: Tracer, formatter: Optional[OpenTracingFormatterABC] = None, span_key: str = 'span',
+                 extra_kv_key: str = 'kv'):
         """
         Initialize the logging handler for OpenTracing
 
@@ -34,11 +35,17 @@ class OpenTracingHandler(Handler):
                with tracer.start_span('myspan') as span:
                    # this log will be propagated to
                    logger.info('A span has been directly passed', extra={'span': span})
+        :param extra_kv_key: Set the key for which for additional key_value pairs can be passed to a logging call
+
+            .. code-block:: python
+
+                logger.info('A span has been directly passed', extra={extra_kv_key: {'key 1': 'value 1', 'key 2': 2}})
         """
         super().__init__()
 
         self._tracer = tracer
         self._span_key = span_key
+        self._extra_kv_key = extra_kv_key
         self._formatter = formatter if formatter is not None else OpenTracingFormatter()
 
     def _get_span(self, record: LogRecord) -> Optional[Span]:
@@ -82,6 +89,18 @@ class OpenTracingHandler(Handler):
         # in the case of an exception, add an error tag of the span
         if self._formatter.has_exception:
             span.set_tag(tags.ERROR, True)
+
+        # check if a key-value pair with the key self._extra_kv_key has been passed to the extra parameter of a logging
+        # call
+        if hasattr(record, self._extra_kv_key):
+            key_values_extra = getattr(record, self._extra_kv_key)
+
+            if not isinstance(key_values_extra, dict):
+                raise TypeError(f'A dict is expected when passing a key-value pair with the key "{self._extra_kv_key}"'
+                                f' to the "extra" parameter of a logging call')
+
+            # convert the values to strings and update the key-value pairs
+            key_values.update({key: str(value) for key, value in key_values_extra.items()})
 
         # log the key-values pairs in the span
         span.log_kv(key_values)

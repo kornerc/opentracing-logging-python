@@ -191,6 +191,33 @@ where the same formatting is used like OpenTracing uses when an uncaught excepti
 
 See the full example [exception.py](examples/exception.py)
 
+### Additional key-value pairs
+To each logging call extra key-value pairs can be passed which should be included in a OpenTracing log.
+Pass a dictionary with the key-value pairs to be added to the key `kv` of the extra parameter of a logging call.
+
+```python
+# add additional key-value pairs to the log by providing a dict to the key "kv" of the "extra" parameter
+logger.info('Here we pass additional arguments to the log', extra={'kv': {'key a': [1, 2, 3], 'key b': 'foo'}})
+```
+which results in a log
+```
+{'event': 'info', 'message': 'Here we pass additional arguments to the log', 'key a': '[1, 2, 3]', 'key b': 'foo'}
+```
+
+Per default these additional key-value pairs are expected to have the key `kv`.
+However, this can be customized by setting the parameter `extra_kv_key` of the constructor of `OpenTracingHandler`.
+
+```python
+OpenTracingHandler(tracer=tracer, extra_kv_key='properties')
+
+# ...
+
+# add additional key-value pairs to the log by providing a dict to the customized key "properties" of the "extra" parameter
+logger.info('Here we pass additional arguments to the log', extra={'properties': {'key a': [1, 2, 3], 'key b': 'foo'}})
+```
+
+See the full example [extra_kv.py](examples/extra_kv.py)
+
 ## Format
 This library uses `logging.Formatter(fmt=fmt).format(logging_LogRecord)` for getting information from a
 `logging.LogRecord`, where `fmt` is the format specified in the
