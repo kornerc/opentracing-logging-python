@@ -3,6 +3,9 @@ Test if OpenTracingHandler gets the active spans correctly
 """
 
 from copy import deepcopy
+import logging
+
+from logging_opentracing import OpenTracingHandler
 
 from .util import check_finished_spans, logger, tracer
 
@@ -71,6 +74,25 @@ def test_pass_span(tracer, logger):
 
     with tracer.start_span(operation_name) as span:
         logger.info(TEST_LOG['message'], extra={'span': span})
+
+    check_finished_spans(tracer=tracer, operation_names_expected=[operation_name],
+                         logs_expected={operation_name: [TEST_LOG]})
+
+
+def test_pass_span_custom_key(tracer):
+    """
+    Test is spans can be passed to the logging call under a custom key
+    """
+    operation_name = 'pass_span_custom_key'
+    span_key = 'spamspam'
+
+    logger_temp = logging.getLogger('PassSpanCustom')
+    logger_temp.setLevel(logging.DEBUG)
+
+    logger_temp.addHandler(OpenTracingHandler(tracer=tracer, span_key=span_key))
+
+    with tracer.start_span(operation_name) as span:
+        logger_temp.info(TEST_LOG['message'], extra={span_key: span})
 
     check_finished_spans(tracer=tracer, operation_names_expected=[operation_name],
                          logs_expected={operation_name: [TEST_LOG]})
