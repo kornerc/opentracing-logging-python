@@ -2,26 +2,17 @@
 An OpenTracing handler for the Python logging package
 """
 
-import io
 from logging import Handler, LogRecord
-import traceback
 from typing import Dict, Optional
 
-from opentracing import Span, Tracer
-from opentracing import logs
+from opentracing import Span, Tracer, logs
 from opentracing.ext import tags
 
-from .formatter import OpenTracingFormatter
+from .formatter import OpenTracingFormatterABC, OpenTracingFormatter
 
 
 class OpenTracingHandler(Handler):
-    #: Default formatter which is used when no `kv_format` has been specified in the constructor
-    default_formatter = {
-        logs.EVENT: '%(levelname)s',
-        logs.MESSAGE: '%(message)s',
-    }
-
-    def __init__(self, tracer: Tracer, kv_format: Optional[Dict[str, str]] = None, span_key: str = 'span'):
+    def __init__(self, tracer: Tracer, formatter: Optional[OpenTracingFormatterABC] = None, span_key: str = 'span'):
         """
         Initialize the logging handler for OpenTracing
 
@@ -52,35 +43,9 @@ class OpenTracingHandler(Handler):
         """
         super().__init__()
 
-        if kv_format is None:
-            kv_format = self.default_formatter
-
         self._tracer = tracer
         self._span_key = span_key
-        self._formatters = self._create_formatters(kv_format=kv_format)
-
-    @staticmethod
-    def _create_formatters(kv_format: Dict[str, str]) -> Dict[str, OpenTracingFormatter]:
-        """
-        Initialize the formatters
-        """
-        return {key: OpenTracingFormatter(fmt=fmt) for key, fmt in kv_format.items()}
-
-    def _format_kv(self, record: LogRecord) -> Dict[str, str]:
-        """
-        Use the formatters ``self.formatters`` to format the key-value pairs for the log.
-
-        :param record: Logging record
-        :return: A dictionary containing the key-value pairs for the log
-        """
-        kv = dict()
-
-        for key, formatter in self._formatters.items():
-            formatter.prepare_record(record=record)
-
-            kv[key] = formatter.formatMessage(record=record)
-
-        return kv
+        self._formatter = formatter if formatter is not None else OpenTracingFormatter()
 
     def _get_span(self, record: LogRecord) -> Optional[Span]:
         """
@@ -145,21 +110,10 @@ class OpenTracingHandler(Handler):
         if span is None:
             return
 
-        kv = self._format_kv(record=record)
+        key_values = self._formatter.format(record=record)
 
-        # check if an error has been raised
-        exc_info = record.exc_info
-        if record.exc_info:
-            exc_type, exc_val, exc_tb = exc_info
-
-            # catch the output of print_tb()
-            sio = io.StringIO()
-            traceback.print_tb(exc_tb, file=sio)
-            exc_tb = sio.getvalue()
-            sio.close()
-
-            # add the exception details to the log
-            self._on_error(span=span, key_values=kv, exc_type=exc_type, exc_val=exc_val, exc_tb=exc_tb)
+        if self._formatter.has_exception:
+            span.set_tag(tags.ERROR, True)
 
         # log the key-values pairs in the span
-        span.log_kv(kv)
+        span.log_kv(key_values)

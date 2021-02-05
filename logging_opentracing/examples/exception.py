@@ -29,8 +29,8 @@ finished_span = tracer.finished_spans()[0]
 
 print(finished_span.logs[0].key_values)
 print(finished_span.logs[1].key_values)
-expected_output = "{'event': 'INFO', 'message': 'This will be difficult'}\n" \
-                  "{'event': 'ERROR', 'message': 'Oh no we have a ZeroDivision Error', " \
+expected_output = "{'event': 'info', 'message': 'This will be difficult'}\n" \
+                  "{'event': 'error', 'message': 'Oh no we have a ZeroDivision Error', " \
                   "'error.object': ZeroDivisionError('division by zero'), " \
                   "'error.kind': <class 'ZeroDivisionError'>, 'stack': '  " \
                   "File \"<path_suffix>/logging_opentracing/examples/exception.py\"" \

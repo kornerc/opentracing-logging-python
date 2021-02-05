@@ -28,4 +28,4 @@ log = finished_span.logs[0]
 # print the key_values of the log
 print(log.key_values)
 
-expected_output = "{'event': 'INFO', 'message': 'Hello World from Python logging to OpenTracing'}\n"
+expected_output = "{'event': 'info', 'message': 'Hello World from Python logging to OpenTracing'}\n"

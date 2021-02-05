@@ -2,7 +2,7 @@ import logging
 
 from opentracing.mocktracer import MockTracer
 
-from logging_opentracing import OpenTracingHandler
+from logging_opentracing import OpenTracingHandler, OpenTracingFormatter
 
 # initialize a mock tracer
 tracer = MockTracer()
@@ -11,12 +11,15 @@ tracer = MockTracer()
 logger = logging.getLogger('mylogger')
 logger.setLevel(logging.INFO)
 
-# create a new OpenTracing handler for the logging package and use own format
-handler = OpenTracingHandler(tracer=tracer, kv_format={
-    'event': '%(levelname)s',
+# create a new formatter with a custom format
+formatter = OpenTracingFormatter(kv_format={
+    'event': '%(levelname_lower)s',
     'message': '%(message)s',
     'source': '%(filename)s:L%(lineno)d',
 })
+
+# create a new OpenTracing handler which uses the custom formatter
+handler = OpenTracingHandler(tracer=tracer, formatter=formatter)
 logger.addHandler(handler)
 
 # start an active span
@@ -32,5 +35,5 @@ log = finished_span.logs[0]
 # print the key_values of the log
 print(log.key_values)
 
-expected_output = "{'event': 'INFO', 'message': 'Hello World from Python logging to OpenTracing', 'source': " \
-                  "'custom_formatter.py:L25'}\n"
+expected_output = "{'event': 'info', 'message': 'Hello World from Python logging to OpenTracing', 'source': " \
+                  "'custom_formatter.py:L28'}\n"

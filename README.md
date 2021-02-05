@@ -184,6 +184,7 @@ Following, an excerpt of the official Python docs; use the format placeholders s
 | filename | `%(filename)s` | Filename portion of `pathname`. |
 | funcName | `%(funcName)s` | Name of function containing the logging call. |
 | levelname | `%(levelname)s` | Text logging level for the message (`'DEBUG'`, `'INFO'`, `'WARNING'`, `'ERROR'`, `'CRITICAL'`). |
+| levelname_lower | `%(levelname_lower)s` | Lower case text logging level for the message (`'debug'`, `'info'`, `'warning'`, `'error'`, `'critical'`). This is a non-default attribute which will be automatically added by the OpenTracingFormatter. |
 | levelno | `%(levelno)s` | Numeric logging level for the message (DEBUG, INFO, WARNING, ERROR, CRITICAL). |
 | lineno | `%(lineno)d` | Source line number where the logging call was issued (if available). |
 | message | `%(message)s` | The logged message. This is set when Formatter.format() is invoked. |

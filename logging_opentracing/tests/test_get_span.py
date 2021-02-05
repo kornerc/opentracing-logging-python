@@ -12,7 +12,8 @@ from opentracing.mocktracer import MockTracer
 
 from ..handler import OpenTracingHandler
 
-TEST_LOG = {'event': 'INFO', 'message': 'This is a test log'}
+TEST_LOG = {'event': 'info', 'message': 'This is a test log'}
+
 
 @pytest.fixture
 def tracer() -> Tracer:
