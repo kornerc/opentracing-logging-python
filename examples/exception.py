@@ -16,7 +16,7 @@ handler = OpenTracingHandler(tracer=tracer)
 logger.addHandler(handler)
 
 # start an active span
-with tracer.start_active_span('hello-world') as scope:
+with tracer.start_active_span('hello-world'):
     try:
         logger.info('This will be difficult')
         # this statement will cause a ZeroDivisionError

@@ -16,7 +16,7 @@ handler = OpenTracingHandler(tracer=tracer)
 logger.addHandler(handler)
 
 # start an active span
-with tracer.start_active_span('hello-world') as scope:
+with tracer.start_active_span('hello-world'):
     # this log will be propagated to
     logger.info('Hello World from Python logging to OpenTracing')
 

@@ -100,7 +100,7 @@ class OpenTracingHandler(Handler):
                                 f' to the "extra" parameter of a logging call')
 
             # convert the values to strings and update the key-value pairs
-            key_values.update({key: str(value) for key, value in key_values_extra.items()})
+            key_values.update(key_values_extra)
 
         # log the key-values pairs in the span
         span.log_kv(key_values)

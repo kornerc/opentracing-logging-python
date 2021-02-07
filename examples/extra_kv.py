@@ -16,7 +16,7 @@ handler = OpenTracingHandler(tracer=tracer)
 logger.addHandler(handler)
 
 # start an active span
-with tracer.start_active_span('hello-world') as scope:
+with tracer.start_active_span('hello-world'):
     # add additional key-value pairs to the log by providing a dict to the key "kv" of the "extra" parameter
     logger.info('Here we pass additional arguments to the log', extra={'kv': {'key a': [1, 2, 3], 'key b': 'foo'}})
 
@@ -29,4 +29,4 @@ log = finished_span.logs[0]
 print(log.key_values)
 
 expected_output = "{'event': 'info', 'message': 'Here we pass additional arguments to the log', 'key a': " \
-                  "'[1, 2, 3]', 'key b': 'foo'}\n"
+                  "[1, 2, 3], 'key b': 'foo'}\n"

@@ -36,7 +36,7 @@ handler = OpenTracingHandler(tracer=tracer)
 logger.addHandler(handler)
 
 # start an active span
-with tracer.start_active_span('hello-world') as scope:
+with tracer.start_active_span('hello-world'):
     # this log will be propagated to
     logger.info('Hello World from Python logging to OpenTracing')
 
@@ -78,7 +78,7 @@ Then, add the handler to the logger.
 
 ```python
 # start an active span
-with tracer.start_active_span('hello-world') as scope:
+with tracer.start_active_span('hello-world'):
     # this log will be propagated to
     logger.info('Hello World from Python logging to OpenTracing')
 ```
@@ -201,7 +201,7 @@ logger.info('Here we pass additional arguments to the log', extra={'kv': {'key a
 ```
 which results in a log
 ```
-{'event': 'info', 'message': 'Here we pass additional arguments to the log', 'key a': '[1, 2, 3]', 'key b': 'foo'}
+{'event': 'info', 'message': 'Here we pass additional arguments to the log', 'key a': [1, 2, 3], 'key b': 'foo'}
 ```
 
 Per default these additional key-value pairs are expected to have the key `kv`.

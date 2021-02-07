@@ -12,7 +12,7 @@ from .util import check_finished_spans, tracer, logger
 
 EXTRA_KV = {'key a': [1, 2, 3], 'key b': 'string', 'key c': True}
 LOG = {**{'event': 'info', 'message': 'Log with additional key-values'},
-       **{key: str(value) for key, value in EXTRA_KV.items()}}
+       **EXTRA_KV}
 
 
 def test_extra_kv(tracer, logger):

@@ -30,8 +30,6 @@ def check_finished_spans(tracer: MockTracer, operation_names_expected: List[str]
     operation_names_expected.reverse()
 
     for span, operation_name_expected in zip(finished_spans, operation_names_expected):
-        last_start_time = span.start_time
-
         assert operation_name_expected == span.operation_name, \
             f'The expected operation name is "{operation_names_expected}", however, the operation name is ' \
             f'"{span.operation_name}"'
@@ -44,7 +42,7 @@ def check_finished_spans(tracer: MockTracer, operation_names_expected: List[str]
             f'are available'
 
         for log, key_values_expected in zip(logs, span_logs_expected):
-            assert key_values_expected == log.key_values, \
+            assert str(key_values_expected) == str(log.key_values), \
                 f'For the span "{operation_names_expected}" a log "{key_values_expected}" is expected, however, the ' \
                 f'log is "{log.key_values}"'
 
