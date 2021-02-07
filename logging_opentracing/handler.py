@@ -87,7 +87,7 @@ class OpenTracingHandler(Handler):
         key_values = self._formatter.format(record=record)
 
         # in the case of an exception, add an error tag of the span
-        if self._formatter.has_exception:
+        if record.exc_info:
             span.set_tag(tags.ERROR, True)
 
         # check if a key-value pair with the key self._extra_kv_key has been passed to the extra parameter of a logging

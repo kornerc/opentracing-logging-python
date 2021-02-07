@@ -31,16 +31,6 @@ class OpenTracingFormatterABC(ABC):
         """
         pass
 
-    @property
-    @abstractmethod
-    def has_exception(self) -> bool:
-        """
-        Check if the last record which has been passed to the method :meth:`format` contained an exception.
-
-        :return: `True` when the last record had an exception attached, `False` otherwise.
-        """
-        pass
-
 
 class OpenTracingFormatter(OpenTracingFormatterABC):
     """
@@ -74,8 +64,6 @@ class OpenTracingFormatter(OpenTracingFormatterABC):
         self._formatters = self._create_formatters(kv_format=kv_format)
         #: Is one of the formatters using time?
         self._uses_time = any([f.usesTime() for f in self._formatters.values()])
-        #: Was an exception attached to the last record which has been used with the method :meth:`format`?
-        self._has_exception = False
 
     def _create_formatters(self, kv_format: Dict[str, str]) -> Dict[str, Formatter]:
         """
@@ -92,15 +80,14 @@ class OpenTracingFormatter(OpenTracingFormatterABC):
         """
         return {key: formatter.formatMessage(record=record) for key, formatter in self._formatters.items()}
 
-    def _format_exception(self, record: LogRecord) -> Dict[str, str]:
+    @staticmethod
+    def _format_exception(record: LogRecord) -> Dict[str, str]:
         """
         Format an exception OpenTracing uses when formatting uncaught exceptions
         """
         exc_info = record.exc_info
         # is an exception attached to the log
         if record.exc_info:
-            self._has_exception = True
-
             exc_type, exc_val, exc_tb = exc_info
 
             # catch the output of print_tb()
@@ -118,8 +105,6 @@ class OpenTracingFormatter(OpenTracingFormatterABC):
                 logs.STACK: exc_tb,
             }
         else:
-            self._has_exception = False
-
             return dict()
 
     def format(self, record: LogRecord) -> Dict[str, str]:
@@ -147,7 +132,3 @@ class OpenTracingFormatter(OpenTracingFormatterABC):
         # merge the key-values of the message and the exception such that the message key-values overwrite the
         # exception key-values incase of duplicates
         return {**key_values_exception, **key_values_message}
-
-    @property
-    def has_exception(self) -> bool:
-        return self._has_exception
