@@ -1,4 +1,6 @@
 import logging
+import re
+import sys
 
 from opentracing.mocktracer import MockTracer
 
@@ -34,5 +36,9 @@ expected_output = "{'event': 'info', 'message': 'This will be difficult'}\n" \
                   "'error.object': ZeroDivisionError('division by zero'), " \
                   "'error.kind': <class 'ZeroDivisionError'>, 'stack': '  " \
                   "File \"<path_suffix>/logging_opentracing/examples/exception.py\"" \
-                  ", line 23, in <module>\\n    1 / 0\\n'}\n"
+                  ", line 25, in <module>\\n    1 / 0\\n'}\n"
 
+# Python <= 3.6 has instead of "ZeroDivisionError('division by zero')" an additional comma
+# "ZeroDivisionError('division by zero,')"
+if sys.version_info[0] == 3 and sys.version_info[1] <= 6:
+    expected_output = re.sub("'division by zero'", "'division by zero',", expected_output)

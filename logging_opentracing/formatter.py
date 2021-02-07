@@ -5,6 +5,7 @@ Formatter to provide logs in a Python dictionary format which can be used by the
 from abc import ABC, abstractmethod
 from io import StringIO
 from logging import Formatter, LogRecord
+import sys
 import traceback
 from typing import Dict, Optional
 
@@ -69,7 +70,15 @@ class OpenTracingFormatter(OpenTracingFormatterABC):
         """
         Initialize the formatters
         """
-        return {key: Formatter(fmt=fmt, validate=False, datefmt=self._date_format) for key, fmt in kv_format.items()}
+        kwargs = {'datefmt': self._date_format}
+
+        # for Python versions >= 3.8 the format should not be validated because it should also be possible to have
+        # static format strings (without any % directive like "%(levelname)s"). This would not be possible with
+        # "validate=True"
+        if (sys.version_info[0] == 3 and sys.version_info[1] >= 8) or sys.version_info[0] > 3:
+            kwargs['validate'] = False
+
+        return {key: Formatter(fmt=fmt, **kwargs) for key, fmt in kv_format.items()}
 
     def _format_message(self, record: LogRecord) -> Dict[str, str]:
         """
