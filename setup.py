@@ -16,6 +16,7 @@ setup(
     keywords=['opentracing', 'logging'],
     platforms='any',
     classifiers=[
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.6',

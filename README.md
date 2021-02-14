@@ -1,11 +1,15 @@
 # opentracing-logging-python
 OpenTracing handler for the Python logging library
 
-**Warning: This library is currently in an alpha state**
+**Information: This library is currently in a beta state**
 
 ## Installation
 
-TODO
+Install the package with pip
+
+```
+pip install logging_opentracing
+```
 
 ## Usage
 We use the mock tracer for the follwing examples but you can also use other OpenTracing compatible tracers.
