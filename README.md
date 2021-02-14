@@ -8,7 +8,7 @@ OpenTracing handler for the Python logging library
 Install the package with pip
 
 ```
-pip install logging_opentracing
+pip install logging-opentracing
 ```
 
 ## Usage
