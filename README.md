@@ -1,3 +1,5 @@
+[![Build Status][ci-img]][ci]
+
 # opentracing-logging-python
 OpenTracing handler for the Python logging library
 
@@ -253,3 +255,6 @@ Following, an excerpt of the official Python docs; use the format placeholders s
 | relativeCreated | `%(relativeCreated)d` | Time in milliseconds when the LogRecord was created, relative to the time the logging module was loaded. |
 | thread | `%(thread)d` | Thread ID (if available). |
 | threadName | `%(threadName)s` | Thread name (if available). |
+
+[ci-img]: https://github.com/kornerc/opentracing-logging-python/workflows/Unit%20Tests/badge.svg?branch=master
+[ci]: https://github.com/kornerc/opentracing-logging-python/actions?query=branch%3Amaster

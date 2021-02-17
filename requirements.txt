@@ -1,0 +1,4 @@
+# add dependencies in setup.py
+
+# this adds dependencies from setup.py
+-e .
