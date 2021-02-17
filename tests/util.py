@@ -64,8 +64,7 @@ def logger(tracer):
     logger.setLevel(logging.DEBUG)
 
     # this fixture is called multiple times and we have to remove the handlers added from the previous fixture call
-    for handler in logger.handlers:
-        logger.removeHandler(handler)
+    logger.handlers.clear()
 
     logger.addHandler(OpenTracingHandler(tracer=tracer))
 

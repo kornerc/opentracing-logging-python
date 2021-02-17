@@ -27,8 +27,7 @@ def test_custom_formats(tracer, kv_format, expected):
     logger.setLevel(logging.DEBUG)
 
     # this test is called multiple times and we have to remove the handlers added from the previous function call
-    for handler in logger.handlers:
-        logger.removeHandler(handler)
+    logger.handlers.clear()
 
     formatter = OpenTracingFormatter(kv_format=kv_format)
     logger.addHandler(OpenTracingHandler(tracer=tracer, formatter=formatter))

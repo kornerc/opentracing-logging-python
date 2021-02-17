@@ -2,8 +2,8 @@
 An OpenTracing handler for the Python logging package
 """
 
-from logging import Handler, LogRecord
-from typing import Optional
+from logging import Handler, LogRecord, NOTSET
+from typing import Optional, Union
 
 from opentracing import Span, Tracer
 from opentracing.ext import tags
@@ -13,7 +13,7 @@ from .formatter import OpenTracingFormatterABC, OpenTracingFormatter
 
 class OpenTracingHandler(Handler):
     def __init__(self, tracer: Tracer, formatter: Optional[OpenTracingFormatterABC] = None, span_key: str = 'span',
-                 extra_kv_key: str = 'kv'):
+                 extra_kv_key: str = 'kv', level: Union[str, int] = NOTSET):
         """
         Initialize the logging handler for OpenTracing
 
@@ -40,13 +40,14 @@ class OpenTracingHandler(Handler):
             .. code-block:: python
 
                 logger.info('A span has been directly passed', extra={extra_kv_key: {'key 1': 'value 1', 'key 2': 2}})
+        :param level: Logging level
         """
-        super().__init__()
+        super().__init__(level=level)
 
         self._tracer = tracer
         self._span_key = span_key
         self._extra_kv_key = extra_kv_key
-        self._formatter = formatter if formatter is not None else OpenTracingFormatter()
+        self.setFormatter(formatter if formatter is not None else OpenTracingFormatter())
 
     def _get_span(self, record: LogRecord) -> Optional[Span]:
         """
@@ -84,7 +85,7 @@ class OpenTracingHandler(Handler):
         if span is None:
             return
 
-        key_values = self._formatter.format(record=record)
+        key_values = self.format(record=record)
 
         # in the case of an exception, add an error tag of the span
         if record.exc_info:
